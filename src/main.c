@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include "raylib.h"
+#include "backend.h"
+#include "renderer.h"
+#include "input.h"
+
+void print_help ( void )
+{
+	printf ( "usage: maria [rom path] [flags]\n\n" );
+	printf ( "flags:\n");	
+	printf ( "	-dr print debug read\n" );
+	printf ( "	-dw print debug write\n" );
+	printf ( "	-cpumsg print cpu messages\n" );
+	printf ( "	-cpuins trace cpu instructions\n" );
+}
+
+int main ( int argc, char *argv[] ) 
+{
+	printf ( "maria emulator\n" );
+
+	if ( argc < 2 )
+	{
+		print_help ();
+		return 1;
+	}
+
+	window_scale_x = window_scale_y = 2;
+	SetTraceLogLevel ( LOG_ERROR );
+	InitWindow ( 320 * window_scale_x, 232 * window_scale_y, "maria" );
+	SetTargetFPS ( 60 );
+
+	init_vdp_render_interface ();
+	open_rom ( argv[1] );
+	dump_rom_header ();
+	attach_rom ();
+
+	m68k_pulse_reset ();
+
+	while ( !WindowShouldClose () )
+	{
+		BeginDrawing ();
+		ClearBackground ( BLACK );
+
+		handle_input ();
+		frame ();	
+		display_render_texture ();
+
+		EndDrawing ();
+
+		if ( IsKeyDown ( KEY_LEFT_ALT ) && IsKeyPressed ( KEY_TAB ) )
+		{
+			close_rom ();
+			printf ( "ROM reload\n" );
+			open_rom ( argv[1] );
+			m68k_pulse_reset ();
+		}
+		else if ( IsKeyPressed ( KEY_TAB ) ) 
+		{
+			m68k_pulse_reset ();
+		}
+	}	
+
+	close_rom ();
+	CloseWindow ();
+	return 0;
+}
