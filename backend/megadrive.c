@@ -72,7 +72,7 @@ unsigned int read_memory(unsigned int address)
 		return RAM[address & 0xffff];
 		// RAM
 	}
-	printf("read(%x)\n", address);
+	//if ( backend_debug_ops.dr ) printf("read(%x)\n", address);
 	return 0;
 }
 
@@ -121,7 +121,7 @@ void write_memory(unsigned int address, unsigned int value)
 		RAM[address & 0xffff] = value;
 		return;
 	}
-	printf("write(%x, %x)\n", address, value);
+	//if ( backend_debug_ops.dw ) printf("write(%x, %x)\n", address, value);
 	return;
 }
 

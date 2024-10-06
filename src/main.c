@@ -6,12 +6,7 @@
 
 void print_help ( void )
 {
-	printf ( "usage: maria [rom path] [flags]\n\n" );
-	printf ( "flags:\n");	
-	printf ( "	-dr print debug read\n" );
-	printf ( "	-dw print debug write\n" );
-	printf ( "	-cpumsg print cpu messages\n" );
-	printf ( "	-cpuins trace cpu instructions\n" );
+	printf ( "usage: maria [rom path]\n" );
 }
 
 int main ( int argc, char *argv[] ) 
