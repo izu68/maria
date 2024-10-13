@@ -5,6 +5,8 @@
 #include "VDP.h"
 #include "input.h"
 
+#include "eva.h"
+
 /*
  * Megadrive memory map as well as main execution loop.
  */
@@ -37,7 +39,10 @@ unsigned int read_memory(unsigned int address)
 	if (range <= 0x3f)
 	{
 		/* ROM */
-		return ROM[address];
+		if ( address >= 0x000000 && address <= 0x3DFFFF )
+		{
+			return ROM[address];
+		}
 	}
 	else if (range == 0xa0)
 	{
@@ -83,7 +88,10 @@ void write_memory(unsigned int address, unsigned int value)
 	if (range <= 0x3f)
 	{
 		/* ROM */
-		ROM[address] = value;
+		if ( address >= 0x000000 && address <= 0x3DFFFF )
+		{
+			ROM[address] = value;
+		}
 		return;
 	}
 	else if (range == 0xa0)
@@ -108,6 +116,25 @@ void write_memory(unsigned int address, unsigned int value)
 			z80_ctrl_write(address & 0xffff, value);
 			return;
 		}
+
+		/* EVA */
+		else if ( address == 0xA13001 )
+		{
+			EVA_RAM[0x00][0x0001] = value; /* ADDR BANK PORT */
+		}
+		else if ( address >= 0xA13002 && address <= 0xA13003 )
+		{
+			EVA_RAM[0x00][address-0xA13000] = value; /* ADDR PORT */
+		}	
+		else if ( address >= 0xA13004 && address <= 0xA13007 )
+		{
+			EVA_RAM[0x00][address-0xA13000] = value; /* DATA PORT */
+			//printf ( "%x %x\n", address, value ); 
+		}
+		else if ( address == 0xA130F0 )
+		{
+			EVA_RAM[0x00][0x00F0] = value;
+		}
 		return;
 	}
 	else if (range >= 0xc0 && range <= 0xdf)
@@ -121,6 +148,9 @@ void write_memory(unsigned int address, unsigned int value)
 		RAM[address & 0xffff] = value;
 		return;
 	}
+
+	
+
 	//if ( backend_debug_ops.dw ) printf("write(%x, %x)\n", address, value);
 	return;
 }
@@ -131,7 +161,6 @@ unsigned int m68k_read_memory_8(unsigned int address)
 }
 unsigned int m68k_read_memory_16(unsigned int address)
 {
-
 	unsigned int range = (address & 0xff0000) >> 16;
 
 	if (range >= 0xc0 && range <= 0xdf)
@@ -146,15 +175,32 @@ unsigned int m68k_read_memory_16(unsigned int address)
 }
 unsigned int m68k_read_memory_32(unsigned int address)
 {
-	unsigned int longword = read_memory(address) << 24 |
+	if ( address >= 0xA13004 && address <= 0xA13007 )
+	{
+		unsigned int eva_longword = EVA_RAM[eva.addr_bank][eva.addr] << 24 |
+					    EVA_RAM[eva.addr_bank][eva.addr+1] << 16 |
+					    EVA_RAM[eva.addr_bank][eva.addr+2] << 8 |
+					    EVA_RAM[eva.addr_bank][eva.addr+3];
+		printf ( "(EVA) MEM READ: BANK %02x ADDR %04x: %08x\n", eva.addr_bank, eva.addr, eva_longword );
+		return eva_longword;
+	}
+	else
+	{
+		unsigned int longword = read_memory(address) << 24 |
 							read_memory(address+1) << 16 |
 							read_memory(address+2) << 8 |
 							read_memory(address+3);
-	return longword;
+		return longword;
+	}
 }
 void m68k_write_memory_8(unsigned int address, unsigned int value)
 {
 	write_memory(address, value);
+
+	if ( address == 0xA13001 )
+	{
+		eva_update_address_bank ();
+	}
 
 	return;
 }
@@ -170,12 +216,23 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
 	{
 		write_memory(address, (value>>8)&0xff);
 		write_memory(address+1, (value)&0xff);
+		//printf ( "%x %x\n", address, value );
+	}
+
+	if ( address >= 0xA13002 && address <= 0xA13003 )
+	{
+		eva_update_address_port ();
 	}
 }
 void m68k_write_memory_32(unsigned int address, unsigned int value)
 {
 	m68k_write_memory_16(address, (value>>16)&0xffff);
 	m68k_write_memory_16(address+2, (value)&0xffff);
+
+	if ( address >= 0xA13004 && address <= 0xA13007 )
+	{
+		eva_update_data_port ();
+	}
 
 	return;
 }

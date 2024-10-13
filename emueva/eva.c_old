@@ -1,0 +1,125 @@
+#include "eva.h"
+
+byte_t EVA_MEM[ADDRSPACE 0xFF][ADDRSPACE 0xFFFF]; /* FF: bank, FFFF: address */
+struct stc_eva eva;
+
+void parse_sbt ( void )
+{
+	FILE *file;
+	int sid;
+	int loop;
+	char ver_str[4];
+	char path_str[64];
+	
+	file = fopen ( "flash/sbt", "r" );
+	if ( file == NULL )
+	{
+		printf ( "(EVA) sound bank table not found\n" );
+		return;
+	}
+
+	/* parse cue file */
+    	while ( fscanf ( file, "%x %s %d", &sid, path_str, &loop ) == 3 )
+	{
+		if ( sid > 0xFF )
+		{
+			printf ( "(EVA) exceded maximum bank allocation\n" );
+		}
+		eva.evasound.sound_bank[sid].bank = LoadSound ( path_str );
+		eva.evasound.sound_bank[sid].loop = loop;
+		if ( eva.evasound.sound_bank[sid].bank.frameCount < 1 )
+		{
+			printf ( "(EVA) failed to allocate sound 0x%x\n", sid );
+			fclose ( file );
+			return;
+		} 
+		printf ( "(EVA) allocated sound bank 0x%x\n", sid );
+    	}
+
+    	fclose ( file );
+}
+
+void eva_reset ( void )
+{
+	printf ( "(EVA) pulse reset\n" );
+
+	/* clear ECT */
+	for ( int i = 10; i <= 0xEF; i++ )
+	{
+		EVA_MEM[0][i] = 0x00;
+	}
+	printf ( "(EVA) ECT clear\n" );
+
+	eva.reg_state = 1;
+
+	/* stop evasound */
+	for ( int i = 0; i <= 0xFF; i++ )
+	{
+		StopSound ( eva.evasound.sound_bank[i].bank );
+	}	
+	
+	/* load sound banks */
+	parse_sbt ();
+
+	//EVA[0x10] = 0xFF; /* test HALT */
+}
+
+void eva_print_trace ( void )
+{
+	printf ( 
+		"(EVA) TRACE 0x%x: ECT0 0x%x, ECT1E 0x%x, ECT1 0x%x, ECT2 0x%x, ECT3 0x%x\n", 
+		eva.reg_pc, EVA_MEM[0][eva.reg_pc], EVA_MEM[0][eva.reg_pc+1], 
+		EVA_MEM[0][eva.reg_pc+2], EVA_MEM[0][eva.reg_pc+4], EVA_MEM[0][eva.reg_pc+6] 
+	);
+}
+
+void eva_nop ( void )
+{
+	/* nop */
+}
+
+void eva_pwf ( void )
+{
+	eva_print_trace ();
+	PlaySound ( eva.evasound.sound_bank[EVA_MEM[0][( eva.reg_pc ) + 1/*ECT1E*/]].bank );
+}
+
+void eva_halt ( void )
+{
+	eva_print_trace ();
+	eva.reg_state = 0; /* halt */
+	printf ( "(EVA) HALT\n" );
+}
+
+void eva_process_ect ( void )
+{
+	/* if 68K is not writing to ECT, process ECT */
+	if ( EVA_MEM[0][0xF0] == 1 )
+	{
+		for ( int i = 0x10; i < 0xF0; i += 8 )
+		{
+			eva.reg_pc = i;
+			switch ( EVA_MEM[0][i] )
+			{
+				default: printf ( "(EVA) FATAL: 0x%x: 0x%x: unrecognized command, ignored\n", 
+							eva.reg_pc, i );
+				case 0x00: eva_nop (); break;
+				case 0x01: eva_pwf (); break;
+				case 0xFF: eva_halt (); break;
+			}
+		}
+		/* clear ECT */
+		for ( int i = 0x10; i <= 0xF0; i++ )
+		{
+			EVA_MEM[0][i] = 0x00;
+		}
+	}
+}
+
+void eva_cycle ( void )
+{
+	if ( eva.reg_state > 0 )
+	{
+		eva_process_ect ();
+	}
+}

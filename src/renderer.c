@@ -3,7 +3,7 @@
 
 float window_scale_x, window_scale_y;
 
-unsigned char framebuffer[320 * 224 * 4];
+unsigned char framebuffer[320 * 240 * 4];
 unsigned char framebuffer_scaled[320 * 224 * 4 * SCALE_X * SCALE_Y];
 const void* p_framebuffer = &framebuffer;
 
@@ -12,7 +12,7 @@ RenderTexture2D render_texture;
 void init_vdp_render_interface ( void )
 {
 	vdp_set_buffer ( framebuffer );
-	render_texture = LoadRenderTexture ( 320, 224 );	
+	render_texture = LoadRenderTexture ( 320, 240 );	
 }
 
 void set_alpha ( unsigned char *fb, int index, int size )
@@ -54,25 +54,31 @@ void correct_color ( unsigned char *fb, int index, int size )
 	correct_color ( fb, index + 4, size ); /* +4 cause A channel is in every 4th byte */	
 }
 
-void display_render_texture ( void )
+void render_vdp_output ( void )
 {
 	/* for ( int i = 0; i < ( 320 * 224 * 4 ); i++ )
 	{
 		framebuffer[i] = 0xFF;
 	} */
-	correct_color ( framebuffer, 0, 320 * 224 * 4 );
+	correct_color ( framebuffer, 0, 320 * 240 * 4 );
 
 	UpdateTextureRec (
 			render_texture.texture, 
-			( Rectangle ) { 0, 0, 320, 224 },
+			( Rectangle ) { 0, 0, 320, 240 },
 			p_framebuffer
 	);
 	DrawTexturePro (
 			render_texture.texture, 
-			( Rectangle ) { 0, 0, 320, 224 }, 
-			( Rectangle ) { 0, 0, 320 * window_scale_x, 224 * window_scale_y }, 
+			( Rectangle ) { 0, 0, 320, 240 }, 
+			( Rectangle ) { ( GetScreenWidth () / 2 ) - ( ( GetScreenHeight () / 0.75 ) / 2), 
+						0, ( GetScreenHeight () / 0.75 ), GetScreenHeight () }, 
 			( Vector2 ) { 0, 0 }, 
 			0, 
 			WHITE
 	); 
+}
+
+void destroy_vdp_render_interface ( void )
+{
+	UnloadRenderTexture ( render_texture );
 }

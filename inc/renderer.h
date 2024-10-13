@@ -10,9 +10,10 @@
 
 extern float window_scale_x, window_scale_y;
 
-extern unsigned char framebuffer[320 * 224 * 4];
+extern unsigned char framebuffer[320 * 240 * 4];
 
 void init_vdp_render_interface ( void );
-void display_render_texture ( void );
+void render_vdp_output ( void );
+void destroy_vdp_render_interface ( void );
 
 #endif
