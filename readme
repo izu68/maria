@@ -6,11 +6,9 @@
 
 	as of now, it's pretty much identical to kiwi, simply replaced
 	the python frontend with a frontend written in C that uses
-	the raylib graphics and input framework.
-
-	the emulator is inaccurate and barely valid as a case study.
-	the repo is only public for whenever it becomes any good, as of
-	now, it's bad as hell.
+	the raylib graphics and input framework. Its main purpose is to
+	develop an emulation framework for EVA, an expansion module I'm
+	designing for mega drive systems.
 
 	***************************************************************
 	
@@ -44,5 +42,7 @@
 	the raylib library in lib is compiled for mac and such as it is
 	will not work on any OS. if you wanna try this out recompile
 	raylib and change the build system to accomodate for another
-	compiler and settings.
+	compiler and settings. The inspector window for monitoring 68K and 
+ 	EVA processes is rendered using the Metal graphics framework, and
+  	thus, won't work outside of mac computers at all.
 
