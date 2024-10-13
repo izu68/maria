@@ -1,3 +1,0 @@
-[submodule "inspector/inspector/imgui"]
-	path = inspector/inspector/imgui
-	url = https://github.com/ocornut/imgui
