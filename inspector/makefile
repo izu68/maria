@@ -39,12 +39,10 @@ CFLAGS = $(CXXFLAGS)
 	$(CXX) $(CXXFLAGS) -ObjC++ -fobjc-weak -fobjc-arc -c -o $@ $<
 
 all: $(EXE)
-	make clean
 	mv libinspector.a ../lib
 	@echo Inspector build complete
 
 $(EXE): $(OBJS)
-	#$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 	ar rc libinspector.a $^
 
 clean:

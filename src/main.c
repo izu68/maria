@@ -28,6 +28,7 @@ int main ( int argc, char *argv[] )
 
 	InitWindow ( 320 * window_scale_x, 240 * window_scale_y, "maria" );
 	SetWindowState ( FLAG_WINDOW_RESIZABLE );
+	InitAudioDevice ();
 	SetTargetFPS ( 60 );
 
 	init_vdp_render_interface ();
@@ -36,6 +37,7 @@ int main ( int argc, char *argv[] )
 	attach_rom ();
 
 	m68k_pulse_reset ();
+	eva_pulse_reset ();
 
 	while ( !WindowShouldClose () )
 	{
@@ -47,7 +49,6 @@ int main ( int argc, char *argv[] )
 		render_vdp_output ();
 
 		EndDrawing ();
-		eva.r0 ++;
 		inspector_transfer_eva_registers ( eva.r0, eva.r1, eva.r2, eva.r3, eva.flags, eva.pc, eva.addr_bank, eva.addr, eva.data );
 		update_inspector_window ();
 

@@ -1,4 +1,6 @@
 #include "eva.h"
+#include "evasound.h"
+#include "m68k/m68kcpu.h"
 
 e_byte EVA_RAM[ADDRSPACE 0xFF][ADDRSPACE 0xFFFF];
 eva_t eva;
@@ -18,9 +20,9 @@ void eva_update_address_port ( void )
 
 void eva_update_data_port ( void )
 {
-	if ( eva.addr_bank < 2 )
+	if ( eva.addr_bank == 0 )
 	{
-		printf ( "(EVA ERROR) UNAUTHORIZED MEM WRITE: BANK %02x ADDR %04x\n", eva.addr_bank, eva.addr );
+		printf ( "(EVA ERROR) UNAUTHORIZED MEM WRITE: BANK %02X ADDR %04X\n", eva.addr_bank, eva.addr );
 		return;
 	}
 	eva.data = EVA_RAM[0x00][0x0004] << 24 | EVA_RAM[0x00][0x0005] << 16 |
@@ -30,5 +32,91 @@ void eva_update_data_port ( void )
 	EVA_RAM[eva.addr_bank][eva.addr+1] = EVA_RAM[0x00][0x0005];
 	EVA_RAM[eva.addr_bank][eva.addr+2] = EVA_RAM[0x00][0x0006];
 	EVA_RAM[eva.addr_bank][eva.addr+3] = EVA_RAM[0x00][0x0007];
-	printf ( "(EVA) MEM WRITE: BANK %02x ADDR %04x: %08x\n", eva.addr_bank, eva.addr, eva.data );
+	printf ( "(EVA) MEM WRITE: BANK %02X ADDR %04X: %08X\n", eva.addr_bank, eva.addr, eva.data );
 }
+
+void eva_pulse_reset ( void )
+{
+	printf ( "(EVA) pulse reset\n" );
+
+	/* clear first RAM bank */
+	for ( int i = 0; i <= 0xFFFF; i++ )
+	{
+		EVA_RAM[0x00][i] = 0x00;
+	}
+	printf ( "(EVA) interface memory clear\n" );
+	/* clear registers */
+	eva.data = eva.r0 = eva.r1 = eva.r2 = eva.r3 = 0x00000000;
+	eva.flags = eva.addr = 0x0000;
+	eva.addr_bank = eva.pc = 0x00;
+	printf ( "(EVA) registers and ports clear\n" );
+
+	/* stop evasound and parse playback */
+	for ( int i = 0; i <= 0xFF; i++ )
+	{
+		StopSound ( evasound.sound_bank[i].bank );
+		evasound.sound_bank[i].active = false;
+	}
+	evasound_parse_sbt ();
+}
+
+void eva_m68k_reset_feedback ( void )
+{	
+	/* stop evasound and parse playback */
+	for ( int i = 0; i <= 0xFF; i++ )
+	{
+		StopSound ( evasound.sound_bank[i].bank );
+		evasound.sound_bank[i].active = false;
+	}
+}
+					/* commands */
+void eva_stwf ( void )
+{
+	PlaySound ( evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3 /* ECT1E LSB */]].bank );
+	evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3]].active = true;
+}
+
+void eva_spwf ( void )
+{
+	StopSound ( evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3 /* ECT1E LSB */]].bank );
+	evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3]].active = false;
+}
+
+void eva_reset ( void )
+{
+	m68k_pulse_reset ();
+	eva_pulse_reset ();
+}
+			        	/* ECT process */
+void eva_process_ect ( void )
+{
+	/* if 68K is not writing to ECT, process ECT */
+	if ( EVA_RAM[0x00][0xF0] != 0 )
+	{
+		for ( int i = 0x10; i < 0xF0; i += 16 )
+		{
+			eva.pc = i;
+			switch ( EVA_RAM[0x00][i] )
+			{
+				default: printf ( "(EVA ERROR) FATAL: %02X: %02X: unrecognized command, ignored\n", 
+							eva.pc, i );
+				case 0x00: /* nop */ break;
+				case 0x01: eva_stwf (); break;
+				case 0x02: eva_spwf (); break;
+				case 0xFF: eva_reset (); break;
+			}
+		}
+		/* clear ECT */
+		for ( int i = 0x10; i <= 0xF0; i++ )
+		{
+			EVA_RAM[0x00][i] = 0x00;
+		}
+	}
+}
+
+void eva_cycle ( void )
+{
+	eva_process_ect ();
+	evasound_handle_loops ();
+}
+

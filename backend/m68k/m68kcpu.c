@@ -35,6 +35,9 @@ static const char* copyright_notice =
 #include "m68kops.h"
 #include "m68kcpu.h"
 
+/* EVA has to respond to m68k actions as well */
+#include "eva.h"
+
 /* ======================================================================== */
 /* ================================= DATA ================================= */
 /* ======================================================================== */
@@ -663,6 +666,9 @@ int m68k_execute(int num_cycles)
 
 			/* Trace m68k_exception, if necessary */
 			m68ki_exception_if_trace(); /* auto-disable (see m68kcpu.h) */
+
+			/* pulse an EVA cycle */
+			eva_cycle ();
 		} while(GET_CYCLES() > 0);
 
 		/* set previous PC to current PC for the next entry into the loop */
@@ -779,6 +785,9 @@ void m68k_pulse_reset(void)
 	m68ki_jump(REG_PC);
 
 	printf ( "(M68K) pulse reset\n" );
+
+	/* inform EVA that m68k has been reset */
+	eva_m68k_reset_feedback ();
 }
 
 /* Pulse the HALT line on the CPU */

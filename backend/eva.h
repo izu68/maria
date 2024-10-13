@@ -30,12 +30,15 @@ typedef struct
 
 	e_byte addr_bank;
 	e_word addr;
-	e_long data;	
+	e_long data;
 } eva_t;
 extern eva_t eva;
 
 void eva_update_address_bank ( void );
 void eva_update_address_port ( void );
 void eva_update_data_port ( void );
+void eva_pulse_reset ( void );
+void eva_m68k_reset_feedback ( void );
+void eva_cycle ( void );
 
 #endif

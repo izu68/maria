@@ -110,6 +110,7 @@ bool eva_monitor_active = true;
 void render_eva_monitor ( void )
 {
 	ImGui::SetNextWindowSize ( ImVec2 ( 346, 256 ), ImGuiCond_None );
+	ImGui::SetNextWindowPos ( ImVec2 ( 20, 20 ) );
 	ImGui::Begin ( "eva", &eva_monitor_active, ImGuiWindowFlags_NoResize );
 	ImGui::SeparatorText ( "registers" );
 	ImGui::Text ( "r0:%08X r1:%08X r2:%08X r3:%08X", eva_r0, eva_r1, eva_r2, eva_r3 );

@@ -43,6 +43,15 @@ unsigned int read_memory(unsigned int address)
 		{
 			return ROM[address];
 		}
+		/* EVA VRAM */
+		if ( address >= 0x3E0000 && address <= 0x3EFFFF ) /* bank 1 */
+		{
+			return EVA_RAM[0x01][address-0x3E0000];
+		}
+		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
+		{
+			return EVA_RAM[0x02][address-0x3F0000];
+		}
 	}
 	else if (range == 0xa0)
 	{
@@ -92,6 +101,15 @@ void write_memory(unsigned int address, unsigned int value)
 		{
 			ROM[address] = value;
 		}
+		/* EVA VRAM */
+		if ( address >= 0x3E0000 && address <= 0x3EFFFF ) /* bank 1 */
+		{
+			EVA_RAM[0x01][address-0x3E0000] = value;
+		}
+		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
+		{
+			EVA_RAM[0x02][address-0x3F0000] = value;
+		}
 		return;
 	}
 	else if (range == 0xa0)
@@ -131,9 +149,14 @@ void write_memory(unsigned int address, unsigned int value)
 			EVA_RAM[0x00][address-0xA13000] = value; /* DATA PORT */
 			//printf ( "%x %x\n", address, value ); 
 		}
+		/* ECT */
+		else if ( address >= 0xA13010 && address <= 0xA130EF )
+		{
+			EVA_RAM[0x00][address-0xA13000] = value;
+		}
 		else if ( address == 0xA130F0 )
 		{
-			EVA_RAM[0x00][0x00F0] = value;
+			EVA_RAM[0x00][0x00F0] = value; /* ECT lock */
 		}
 		return;
 	}
@@ -181,7 +204,7 @@ unsigned int m68k_read_memory_32(unsigned int address)
 					    EVA_RAM[eva.addr_bank][eva.addr+1] << 16 |
 					    EVA_RAM[eva.addr_bank][eva.addr+2] << 8 |
 					    EVA_RAM[eva.addr_bank][eva.addr+3];
-		printf ( "(EVA) MEM READ: BANK %02x ADDR %04x: %08x\n", eva.addr_bank, eva.addr, eva_longword );
+		printf ( "(EVA) MEM READ: BANK %02X ADDR %04X: %08X\n", eva.addr_bank, eva.addr, eva_longword );
 		return eva_longword;
 	}
 	else
