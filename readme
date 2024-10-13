@@ -14,7 +14,7 @@
 	
 					supported:
 
-				   m68k core, z80 core
+			                m68k core
 				  H40 and H32 VDP modes
 			       all forms of VDP scrolling
 			 3 Button controllers ( PORT 1 & PORT 2 )
