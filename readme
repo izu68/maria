@@ -40,9 +40,7 @@
 
 		the build system and compilation instructions are set up for mac,
 		the raylib library in lib is compiled for mac and such as it is
-		will not work on any OS. if you wanna try this out recompile
-		raylib and change the build system to accomodate for another
-		compiler and settings. The inspector window for monitoring 68K and 
+		will not work on any OS. The inspector window for monitoring 68K and 
  		EVA processes is rendered using the Metal graphics framework, and
   		thus, won't work outside of mac computers at all.
 
