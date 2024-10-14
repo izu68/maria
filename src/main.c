@@ -24,7 +24,7 @@ int main ( int argc, char *argv[] )
 	window_scale_x = window_scale_y = 2;
 	SetTraceLogLevel ( LOG_ERROR );
 
-	init_inspector_window ();
+	//init_inspector_window ();
 
 	InitWindow ( 320 * window_scale_x, 240 * window_scale_y, "maria" );
 	SetWindowState ( FLAG_WINDOW_RESIZABLE );
@@ -45,12 +45,12 @@ int main ( int argc, char *argv[] )
 		ClearBackground ( BLACK );
 
 		handle_input ();
-		frame ();	
+		frame ();
 		render_vdp_output ();
 
 		EndDrawing ();
 		inspector_transfer_eva_registers ( eva.r0, eva.r1, eva.r2, eva.r3, eva.flags, eva.pc, eva.addr_bank, eva.addr, eva.data );
-		update_inspector_window ();
+		//update_inspector_window ();
 
 		if ( IsKeyDown ( KEY_LEFT_ALT ) && IsKeyPressed ( KEY_TAB ) )
 		{
@@ -71,6 +71,6 @@ int main ( int argc, char *argv[] )
 	close_rom ();
 	destroy_vdp_render_interface ();
 	CloseWindow ();
-	destroy_inspector_window ();
+	//destroy_inspector_window ();
 	return 0;
 }

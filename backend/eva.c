@@ -49,6 +49,7 @@ void eva_pulse_reset ( void )
 	eva.data = eva.r0 = eva.r1 = eva.r2 = eva.r3 = 0x00000000;
 	eva.flags = eva.addr = 0x0000;
 	eva.addr_bank = eva.pc = 0x00;
+	eva.soft_boot = false;
 	printf ( "(EVA) registers and ports clear\n" );
 
 	/* stop evasound and parse playback */
@@ -58,6 +59,8 @@ void eva_pulse_reset ( void )
 		evasound.sound_bank[i].active = false;
 	}
 	evasound_parse_sbt ();
+	printf ( "(EVA) reset done\n" );
+	printf ( "(EVA) CALLING BOOT ROM\n" );
 }
 
 void eva_m68k_reset_feedback ( void )
@@ -70,22 +73,35 @@ void eva_m68k_reset_feedback ( void )
 	}
 }
 					/* commands */
-void eva_stwf ( void )
+void eva_stsp ( void )
 {
 	PlaySound ( evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3 /* ECT1E LSB */]].bank );
 	evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3]].active = true;
 }
 
-void eva_spwf ( void )
+void eva_spsp ( void )
 {
 	StopSound ( evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3 /* ECT1E LSB */]].bank );
 	evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3]].active = false;
 }
 
+void eva_ssp ( void )
+{
+	SetSoundPan ( evasound.sound_bank[EVA_RAM[0x00][eva.pc + 3 /* ECT1E LSB */]].bank, ( float ) ( eva.pc + 1 /* ECT0E */ / 255.0f ) );
+	printf ("setsoundpan %X\n", eva.pc+1 );
+}
+
 void eva_reset ( void )
 {
-	m68k_pulse_reset ();
 	eva_pulse_reset ();
+	m68k_pulse_reset ();
+}
+
+void eva_bootrom_swaprom ( void )
+{
+	printf ( "(EVA) CALLING GAME ROM\n" );
+	eva.soft_boot = true;
+	m68k_pulse_reset ();
 }
 			        	/* ECT process */
 void eva_process_ect ( void )
@@ -101,8 +117,10 @@ void eva_process_ect ( void )
 				default: printf ( "(EVA ERROR) FATAL: %02X: %02X: unrecognized command, ignored\n", 
 							eva.pc, i );
 				case 0x00: /* nop */ break;
-				case 0x01: eva_stwf (); break;
-				case 0x02: eva_spwf (); break;
+				case 0x01: eva_stsp (); break;
+				case 0x02: eva_spsp (); break;
+				case 0x03: eva_ssp (); break;
+				case 0xFE: eva_bootrom_swaprom (); break;
 				case 0xFF: eva_reset (); break;
 			}
 		}

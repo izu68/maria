@@ -41,16 +41,19 @@ unsigned int read_memory(unsigned int address)
 		/* ROM */
 		if ( address >= 0x000000 && address <= 0x3DFFFF )
 		{
-			return ROM[address];
+			if ( !eva.soft_boot )
+			{
+				return eva_bootrom[address];
+			}
+			else
+			{
+				return ROM[address];
+			}
 		}
 		/* EVA VRAM */
-		if ( address >= 0x3E0000 && address <= 0x3EFFFF ) /* bank 1 */
-		{
-			return EVA_RAM[0x01][address-0x3E0000];
-		}
 		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
 		{
-			return EVA_RAM[0x02][address-0x3F0000];
+			return EVA_RAM[0x01][address-0x3F0000];
 		}
 	}
 	else if (range == 0xa0)
@@ -102,13 +105,9 @@ void write_memory(unsigned int address, unsigned int value)
 			ROM[address] = value;
 		}
 		/* EVA VRAM */
-		if ( address >= 0x3E0000 && address <= 0x3EFFFF ) /* bank 1 */
-		{
-			EVA_RAM[0x01][address-0x3E0000] = value;
-		}
 		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
 		{
-			EVA_RAM[0x02][address-0x3F0000] = value;
+			EVA_RAM[0x01][address-0x3F0000] = value;
 		}
 		return;
 	}
