@@ -45,14 +45,15 @@ unsigned int read_memory(unsigned int address)
 			{
 				return eva_bootrom[address];
 			}
-			else
+			else 
 			{
 				return ROM[address];
 			}
 		}
 		/* EVA VRAM */
-		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
+		if ( address >= 0x3F0000 && address <= 0x3FFFFF )
 		{
+			//printf ( "(EVA) (DMA) VRAM READ: ADDR %04X: %X\n", address-0x3F0000, EVA_RAM[0x01][address-0x3F0000] );
 			return EVA_RAM[0x01][address-0x3F0000];
 		}
 	}
@@ -105,7 +106,7 @@ void write_memory(unsigned int address, unsigned int value)
 			ROM[address] = value;
 		}
 		/* EVA VRAM */
-		if ( address >= 0x3F0000 && address <= 0x3FFFFF ) /* bank 2 */
+		if ( address >= 0x3F0000 && address <= 0x3FFFFF )
 		{
 			EVA_RAM[0x01][address-0x3F0000] = value;
 		}

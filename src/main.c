@@ -3,7 +3,6 @@
 #include "backend.h"
 #include "renderer.h"
 #include "input.h"
-#include "inspector.h"
 #include "../backend/eva.h"
 
 void print_help ( void )
@@ -23,8 +22,6 @@ int main ( int argc, char *argv[] )
 
 	window_scale_x = window_scale_y = 2;
 	SetTraceLogLevel ( LOG_ERROR );
-
-	//init_inspector_window ();
 
 	InitWindow ( 320 * window_scale_x, 240 * window_scale_y, "maria" );
 	SetWindowState ( FLAG_WINDOW_RESIZABLE );
@@ -49,8 +46,6 @@ int main ( int argc, char *argv[] )
 		render_vdp_output ();
 
 		EndDrawing ();
-		inspector_transfer_eva_registers ( eva.r0, eva.r1, eva.r2, eva.r3, eva.flags, eva.pc, eva.addr_bank, eva.addr, eva.data );
-		//update_inspector_window ();
 
 		if ( IsKeyDown ( KEY_LEFT_ALT ) && IsKeyPressed ( KEY_TAB ) )
 		{
@@ -61,9 +56,8 @@ int main ( int argc, char *argv[] )
 			attach_rom ();
 			m68k_pulse_reset ();
 		}
-		else if ( IsKeyPressed ( KEY_TAB ) || inspector_sent_reset () ) 
+		else if ( IsKeyPressed ( KEY_TAB ) ) 
 		{
-			emu_done_reset (); /* send back to inspector */
 			m68k_pulse_reset ();
 		}
 	}	
