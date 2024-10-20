@@ -1,7 +1,8 @@
 ## maria
 
-![Sonic]
-(repores/sonic.md)
+<p align="center">
+  <img src="repores/sonic.png"/>
+</p>
 
 An extremely experimental Mega Drive emulator, just for my own testing and development. It's forked off kiwi and based on the MUSASHI m68k portable emulator written in C.
 
