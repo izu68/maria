@@ -50,7 +50,7 @@ void eva_pulse_reset ( void )
 	eva.data = eva.r0 = eva.r1 = eva.r2 = eva.r3 = 0x00000000;
 	eva.flags = eva.addr = 0x0000;
 	eva.addr_bank = eva.pc = 0x00;
-	eva.soft_boot = false;
+	eva.soft_boot = true;
 	printf ( "(EVA) registers and ports clear\n" );
 
 	/* stop evasound and parse playback */
