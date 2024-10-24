@@ -41,11 +41,12 @@ unsigned int read_memory(unsigned int address)
 		/* ROM */
 		if ( address >= 0x000000 && address <= 0x3DFFFF )
 		{
+			/*
 			if ( !eva.soft_boot )
 			{
 				return eva_bootrom[address];
 			}
-			else 
+			else */
 			{
 				return ROM[address];
 			}

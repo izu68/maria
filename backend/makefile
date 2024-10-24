@@ -2,11 +2,14 @@ OS := $(shell uname)
 
 CC = clang
 AR = ar 
+
+EVA_SRC = /Users/izu/src/eva/evaemu/
+
 WARNINGS = -Wno-unused-function \
 		-Wno-absolute-value \
 		-Wno-tautological-pointer-compare
-CFLAGS = $(WARNINGS) -c -Im68k -I. -I../inc/external -O2 --std=c99 -fPIC
-CFLAGS_M68K = $(WARNINGS) -c -Im68k -I. -I../inc/external -O2 --std=c99 -fPIC
+CFLAGS = $(WARNINGS) -c -Im68k -I. -I../inc/external -I$(EVA_SRC) -O2 --std=c99 -fPIC
+CFLAGS_M68K = $(WARNINGS) -c -Im68k -I. -I../inc/external -I$(EVA_SRC) -O2 --std=c99 -fPIC
 LDFLAGS = -L../lib
 
 ifdef COVERAGE
@@ -19,14 +22,15 @@ else
 endif
 endif
 
+
 all: libmegadrive
 
 clean:
 	rm *.o m68k/*.o hqx/*.o m68k/m68kops.h m68k/m68kmake
 
-libmegadrive: m68k/m68kcpu.o m68k/m68kops.o m68k/m68kopac.o m68k/m68kopdm.o m68k/m68kopnz.o m68k/m68kdasm.o eva_bootrom.o eva.o evasound.o evafx.o megadrive.o vdp.o input.o scale.o z80.o hqx/init.o hqx/hq2x.o hqx/hq3x.o hqx/hq4x.o
+libmegadrive: m68k/m68kcpu.o m68k/m68kops.o m68k/m68kopac.o m68k/m68kopdm.o m68k/m68kopnz.o m68k/m68kdasm.o $(EVA_SRC)eva_bootrom.o $(EVA_SRC)eva.o $(EVA_SRC)evasound.o $(EVA_SRC)evafx.o megadrive.o vdp.o input.o scale.o z80.o hqx/init.o hqx/hq2x.o hqx/hq3x.o hqx/hq4x.o
 		@echo "Linking libmegadrive.a and moving to (root)/lib"
-		@$(AR) rc libmegadrive.a m68k/m68kcpu.o m68k/m68kops.o m68k/m68kopac.o m68k/m68kopdm.o m68k/m68kopnz.o m68k/m68kdasm.o eva_bootrom.o eva.o evasound.o evafx.o megadrive.o vdp.o input.o scale.o z80.o hqx/init.o hqx/hq2x.o hqx/hq3x.o hqx/hq4x.o
+		@$(AR) rc libmegadrive.a m68k/m68kcpu.o m68k/m68kops.o m68k/m68kopac.o m68k/m68kopdm.o m68k/m68kopnz.o m68k/m68kdasm.o $(EVA_SRC)eva_bootrom.o $(EVA_SRC)eva.o $(EVA_SRC)evasound.o $(EVA_SRC)evafx.o megadrive.o vdp.o input.o scale.o z80.o hqx/init.o hqx/hq2x.o hqx/hq3x.o hqx/hq4x.o
 		@mv libmegadrive.a ../lib
 
 %.o: %.c

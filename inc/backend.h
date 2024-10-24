@@ -16,6 +16,7 @@ void set_rom ( unsigned char *buffer, size_t size );
 void m68k_pulse_reset ( void );
 void m68k_pulse_halt ( void );
 void m68k_execute ( int num_cycles );
+void eva_pulse_reset ();
 void frame ( void );
 
 #endif

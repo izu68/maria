@@ -3,7 +3,6 @@
 #include "backend.h"
 #include "renderer.h"
 #include "input.h"
-#include "../backend/eva.h"
 
 void print_help ( void )
 {
@@ -65,6 +64,5 @@ int main ( int argc, char *argv[] )
 	close_rom ();
 	destroy_vdp_render_interface ();
 	CloseWindow ();
-	//destroy_inspector_window ();
 	return 0;
 }
